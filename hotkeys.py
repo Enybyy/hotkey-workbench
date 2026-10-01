@@ -1,6 +1,7 @@
 """Bounded hotkey sequences. Default CLI execution is a dry run."""
 import argparse
 import ctypes
+from ctypes import wintypes
 import threading
 import time
 from dataclasses import dataclass
@@ -56,6 +57,8 @@ def game_active():
     if not hasattr(ctypes, "windll"):
         return False
     user32 = ctypes.windll.user32
+    user32.GetForegroundWindow.restype = wintypes.HWND
+    user32.GetWindowTextW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
     hwnd = user32.GetForegroundWindow()
     text = ctypes.create_unicode_buffer(512)
     user32.GetWindowTextW(hwnd, text, len(text))
