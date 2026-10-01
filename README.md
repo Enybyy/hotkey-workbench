@@ -2,9 +2,11 @@
 
 Windows keyboard/mouse sequences with an AutoHotkey v2 implementation, a Python engine, and an interactive browser preview.
 
-[![Actual browser preview](assets/demo-desktop.png)](https://enybyy.github.io/hotkey-workbench/)
+![Actual browser preview](assets/demo-desktop.png)
 
-[Try the demo](https://enybyy.github.io/hotkey-workbench/) · [Download the AutoHotkey script](HotkeyWorkbench.ahk)
+[Download the interactive preview](index.html) · [Download the AutoHotkey script](HotkeyWorkbench.ahk)
+
+Download `index.html` and open it in your browser to try the preview locally. Public web hosting is pending activation.
 
 ## Run on Windows
 
