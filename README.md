@@ -1,62 +1,131 @@
+<div align="center">
+
 # Hotkey Workbench
 
-Windows keyboard/mouse sequences with an AutoHotkey v2 implementation, a Python engine, and an interactive browser preview.
+Secuencias de teclado y ratón para Windows, con una vista previa que permite observar cada acción antes de ejecutarla.
 
-![Actual browser preview](assets/demo-desktop.png)
+<a href="#iniciar-la-demo"><img src="assets/start-demo.svg" width="400" alt="Iniciar demo"></a>
 
-[Download the interactive preview](index.html) · [Download the AutoHotkey script](HotkeyWorkbench.ahk)
+<p>
+<a href="https://github.com/Enybyy/hotkey-workbench"><img src="assets/github.svg" width="128" alt="Código en GitHub"></a>
+<a href="https://www.upwork.com/freelancers/~01471ca462b236e8e5?p=2105780771181342720"><img src="assets/upwork.svg" width="128" alt="Ver el proyecto en Upwork"></a>
+</p>
 
-Download `index.html` and open it in your browser to try the preview locally. Public web hosting is pending activation.
+![Captura real de Hotkey Workbench](assets/demo-desktop.png)
 
-## Run on Windows
+*La captura muestra la secuencia 1 y su registro real en la demo del navegador.*
 
-Install [AutoHotkey v2](https://www.autohotkey.com/) and open `HotkeyWorkbench.ahk`. The control panel starts in **preview mode**: actions appear in the log without generating mouse/keyboard output. To use the original game profile, uncheck preview and bring `left4dead2.exe` to the foreground.
+[El proyecto](#del-atajo-al-control) · [Cómo funciona](#una-secuencia-a-la-vista) · [Windows](#usarlo-en-windows) · [Verificación](#comprobaciones)
 
-| Key | Sequence | Requested delays |
+</div>
+
+## Iniciar la demo
+
+La vista previa funciona sin instalar Python ni AutoHotkey:
+
+1. [Descarga index.html](https://raw.githubusercontent.com/Enybyy/hotkey-workbench/main/index.html) y guárdalo como archivo HTML.
+2. Ábrelo en tu navegador.
+3. Elige **Q**, **T** o **1** y pulsa **Run preview**. Prueba la cámara lenta, pausa la ejecución o exporta el registro a JSON.
+
+El archivo es autocontenido. El alojamiento en GitHub Pages todavía está pendiente; por ahora, el botón principal lleva a estas instrucciones.
+
+La demo representa las acciones dentro de la página. No envía clics ni teclas al juego o a otras ventanas.
+
+## Del atajo al control
+
+El proyecto comenzó como un script personal de Python para Left 4 Dead 2: una tecla disparaba una pequeña secuencia de movimientos de rueda, clics o barra espaciadora.
+
+Cuando estas acciones se encadenan con pausas cortas, ya no basta con saber qué tecla las inicia. También importa que no se solapen, que puedan detenerse y que no continúen después de cambiar de ventana. Esa necesidad dio lugar a una versión más clara del script, un port a AutoHotkey v2 y un espacio donde revisar cada paso sin entrar al juego.
+
+La implementación conserva las tres secuencias originales y corrige la diferencia entre el atajo anunciado como `1` y su antigua asignación a `|`. La salida del programa también se reorganizó para detener el listener principal.
+
+## Una secuencia a la vista
+
+Selecciona un atajo y observa sus acciones en orden. La línea de tiempo muestra las pausas solicitadas y el registro permite revisar qué ocurrió durante la ejecución.
+
+| Atajo | Acciones | Pausas solicitadas |
 | --- | --- | --- |
-| Q | Wheel down 2 → wheel up 2 | 31 / 32 ms |
-| T | Left click → right click | 100 ms |
-| 1 | Left click → right click → Space | 10 / 10 / 20 ms |
-| F8 | Pause / resume | Panel or target window |
-| Alt+F5 | Exit | Panel or target window |
+| **Q** | Rueda abajo 2 → rueda arriba 2 | 31 / 32 ms |
+| **T** | Clic izquierdo → clic derecho | 100 ms |
+| **1** | Clic izquierdo → clic derecho → Espacio | 10 / 10 / 20 ms |
 
-The panel's preview buttons always preview, even when live mode is selected. Hotkeys pass through to other windows. A held shortcut runs once; cooldown and busy state prevent overlapping sequences. Pause, mode changes and target focus loss cancel remaining steps. Windows timers do not guarantee exact millisecond execution.
+En Windows, el motor comprueba el estado de pausa y la ventana de destino antes de enviar cada paso. El estado de ejecución impide secuencias simultáneas; la pausa, el cambio de modo o la pérdida de foco cancelan los pasos pendientes.
 
-## How it works
+Mantener una tecla presionada inicia una sola secuencia. Los tiempos son pausas solicitadas al sistema operativo: no representan una garantía de precisión al milisegundo.
 
-1. A key selects a declared sequence.
-2. The engine checks pause, cooldown and target focus.
-3. Each action runs in order; a one-shot timer schedules the next step.
-4. Each callback rechecks cancellation and focus before sending input.
-5. The bounded event log explains the result; closing the panel ends the process.
+## Usarlo en Windows
 
-The browser demo visualizes these steps within the page. It supports slow motion, pause, cancellation and JSON export. It cannot send input to a game or operate other applications.
+Instala [AutoHotkey v2](https://www.autohotkey.com/), descarga [HotkeyWorkbench.ahk](HotkeyWorkbench.ahk) y ábrelo.
 
-## Python version
+El panel empieza en **vista previa**: registra las acciones sin enviarlas. Los botones del panel siempre previsualizan. Para activar el perfil original, desmarca la vista previa y coloca `left4dead2.exe` en primer plano.
+
+| Control | Qué hace |
+| --- | --- |
+| **F8** | Pausa o reanuda desde el panel o el juego de destino |
+| **Alt+F5** | Cierra el programa desde el panel o el juego de destino |
+| **Cerrar el panel** | Termina el proceso |
+| **Cambiar de ventana** | Cancela los pasos pendientes de una secuencia en vivo |
+
+Los atajos de AutoHotkey quedan limitados al panel y a la ventana configurada. En las demás aplicaciones mantienen su comportamiento habitual.
+
+<details>
+<summary><strong>También disponible en Python</strong></summary>
+
+La demostración de consola solo requiere la biblioteca estándar:
 
 ```powershell
 python hotkeys.py --demo 1
+```
+
+Para escuchar los atajos originales con pynput:
+
+```powershell
 python -m pip install -r requirements.txt
 python hotkeys.py --live
 ```
 
-Dry-run mode needs only the standard library. Live mode uses `pynput`; output is limited to a foreground window titled Left 4 Dead 2. The Python listener does not suppress the original shortcut key. The AutoHotkey profile uses the executable name and intercepts the active shortcuts. Choose the implementation that matches the application.
+La versión Python comprueba el título de la ventana activa y no bloquea la tecla original. La versión AutoHotkey comprueba el ejecutable e intercepta los atajos del perfil activo.
 
-## Changes from the original
+</details>
 
-This project derives from an existing Python/pynput L4D2 hotkey script. Its three action sequences are retained, with `1` correctly replacing the original accidental `|` mapping. It adds pause, bounded execution, overlap protection, cancellation, target checks and a shutdown path that terminates the main listener. An AutoHotkey v2 port and visible browser preview make the sequence inspectable.
+<details>
+<summary><strong>Adaptar el perfil a otra aplicación</strong></summary>
 
-## Verification
+Modifica `Target` y `Sequences` en el archivo AutoHotkey. Antes de trabajar sobre un script existente, comprueba si utiliza AutoHotkey v1 o v2: su sintaxis es distinta.
+
+El perfil usa secuencias finitas y debe probarse en el entorno de destino. Utilízalo donde la automatización de entrada esté permitida.
+
+</details>
+
+## Comprobaciones
+
+Se verificaron el orden de acciones, la asignación de `1`, la cancelación, la pérdida de foco, el cooldown y el bloqueo de ejecuciones simultáneas mediante cinco pruebas de Python.
+
+AutoHotkey v2.0.28 cargó el script completo sin errores y verificó su configuración. La demo web se probó con la secuencia de tres acciones, pausa y reanudación; también se revisó su presentación en una ventana estrecha.
 
 ```powershell
 python -m unittest discover -s tests -v
 AutoHotkey64.exe /ErrorStdOut HotkeyWorkbench.ahk --self-test
 ```
 
-Five Python tests cover action order, corrected mapping, cooldown, focus loss, cancellation and overlap/pause. AutoHotkey v2.0.28 successfully loaded the complete script and checked its configuration in self-test mode. The browser preview was exercised for the three-step sequence and pause/resume; its narrow layout was checked at the browser's effective 400px viewport.
+La comprobación de AutoHotkey valida la carga y configuración, no todas las rutas de ejecución en vivo. La compatibilidad dentro del juego sigue pendiente. Los detalles están en [las notas de verificación](docs/VERIFICATION.md).
 
-Native gameplay and compatibility with a client's particular game/script have **not** been tested. The AutoHotkey check validates loading/configuration, not every live execution path. See [verification notes](docs/VERIFICATION.md).
+## Más fácil de revisar, ajustar y mantener
 
-## Customize
+Las acciones y sus pausas quedan declaradas en un solo lugar. El registro permite seguir una secuencia sin adivinar qué paso se ejecutó, y los controles de pausa y cancelación facilitan probar cambios de forma gradual.
 
-Edit `Target` and `Sequences` in the `.ahk` file for the intended application. Check whether an existing client script uses AutoHotkey v1 or v2 before modifying it; the syntax differs. The profile contains finite sequences only. Use it in applications where input automation is permitted.
+La vista previa da un punto de partida compartido para explicar un ajuste: primero se observa la secuencia, después se modifica y finalmente se comprueba en la aplicación de destino.
+
+---
+
+<div align="center">
+
+**Eliud Rojas Mendoza · Enybyy**
+
+<p>
+<a href="https://github.com/Enybyy"><img src="assets/github.svg" width="128" alt="Perfil de GitHub"></a>
+<a href="https://www.upwork.com/freelancers/~01471ca462b236e8e5"><img src="assets/upwork.svg" width="128" alt="Perfil de Upwork"></a>
+</p>
+
+</div>
+
